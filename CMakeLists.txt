@@ -19,8 +19,9 @@ add_executable(test_visualizer
 # Add the sequential convex hull executable
 add_executable(sequential_incremental_convex_hull
         test_sequential_visualizer.cpp
-        src/sequential_convex_hull.cpp
-        include/sequential_convex_hull.h
+        src/convex_hull.cpp
+        src/visualizer_helper.cpp
+        include/convex_hull.h
         include/visualizer_helper.h
 )
 
@@ -28,8 +29,11 @@ add_executable(sequential_incremental_convex_hull
 add_executable(parallel_incremental_convex_hull
         test_parallel_visualizer.cpp
         src/parallel_convex_hull.cpp
+        src/convex_hull.cpp
+        src/visualizer_helper.cpp
         include/parallel_convex_hull.h
         include/visualizer_helper.h
+        src/visualizer_helper.cpp
 )
 
 # Link libraries to all executables

@@ -1,14 +1,15 @@
 #include <iostream>
 #include <vector>
-#include <complex>
 #include <random>
 #include <chrono>
+#include "convex_hull.h"
 #include "parallel_convex_hull.h"
 
 int main(int argc, char** argv) {
-  // Generador de números aleatorios
+
   std::random_device rd;
   std::mt19937 gen(rd());
+  // Generador de números aleatorios
   std::uniform_real_distribution<> dis(0.0, 100.0);
 
   // Iterar desde 10 puntos hasta 10,000 puntos

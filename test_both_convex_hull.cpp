@@ -8,8 +8,6 @@
 
 int main() {
   // Random number generator
-  std::random_device rd;
-  std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(0.0, 100.0);
 
   // Compare for increasing number of points
