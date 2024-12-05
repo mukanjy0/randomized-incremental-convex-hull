@@ -11,6 +11,8 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <chrono>
+#include <thread>
 #include <random>
 #include "sequential_convex_hull.h"
 #include "visualizer_helper.h"
@@ -268,6 +270,9 @@ namespace Sequential2DCH {
 
         // Send updated hull to visualizer
         send_update(current_points, current_hull);
+        // add delay for this function
+        std::this_thread::sleep_for(std::chrono::seconds (1));
+
       }
 
       //cout << "Final Hull" << std::endl;
