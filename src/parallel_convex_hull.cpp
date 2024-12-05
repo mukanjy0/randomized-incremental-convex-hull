@@ -1,107 +1,158 @@
-#include <pthread.h>
+#include "parallel_convex_hull.h"
+#include <algorithm>
+#include <random>
 #include <vector>
 #include <set>
 #include <map>
-#include <random>
-#include <algorithm>
-#include "visualizer_helper.h"
-#include "parallel_convex_hull.h"
-#include "convex_hull.h"
+#include <pthread.h>
 
-
-
+// Constante para el número de hilos
 const int NUM_THREADS = 8;
 
-// Thread arguments
-struct ThreadArgs {
-    std::vector<P> points_subset;
-    std::vector<P> partial_hull;
-};
+// Variables globales compartidas entre hilos
+std::set<facet> global_facets;
+std::map<facet, std::set<P>> global_C;
+std::map<P, std::set<facet>> global_C_inv;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
+// Operador producto cruzado
 D operator*(P p1, P p2) {
-    auto [x1, y1] = p1;
-    auto [x2, y2] = p2;
-    return x1 * y2 - x2 * y1;
+    return p1.X * p2.Y - p1.Y * p2.X;
 }
 
+// Operador resta
 P operator-(P p1, P p2) {
-    auto [x1, y1] = p1;
-    auto [x2, y2] = p2;
-    return {x1 - x2, y1 - y2};
+    return {p1.X - p2.X, p1.Y - p2.Y};
 }
 
+// Intercambia los componentes de una faceta
 facet swapComponents(facet f) {
     return {f.second, f.first};
 }
 
+// Verifica si un punto es visible desde una faceta
 bool isVisible(P v, facet t) {
     auto A = t.second - t.first;
     auto B = v - t.first;
     return A * B > 0;
 }
 
-// Thread function: Compute partial convex hull for a subset of points
-void* computePartialHull(void* args) {
+// Estructura para los argumentos de los hilos
+struct ThreadArgs {
+    facet t;
+    std::vector<P> points;
+};
+
+// Función que procesará las facetas en paralelo
+void* processFacet(void* args) {
     ThreadArgs* thread_args = (ThreadArgs*)args;
-    thread_args->partial_hull = ConvexHull(thread_args->points_subset);
+    facet t = thread_args->t;
+    std::vector<P>& points = thread_args->points;
+
+    // Construye el mapa C para esta faceta
+    std::set<P> visible_points;
+    for (const auto& p : points) {
+        if (isVisible(p, t)) {
+            visible_points.insert(p);
+        }
+    }
+
+    // Bloquea el mutex para modificar las estructuras globales
+    pthread_mutex_lock(&mutex);
+    global_C[t] = visible_points;
+    for (const auto& p : visible_points) {
+        global_C_inv[p].insert(t);
+    }
+    pthread_mutex_unlock(&mutex);
+
     pthread_exit(nullptr);
 }
 
-// Merge two convex hulls into a single hull
-std::vector<P> mergeHulls(const std::vector<P>& hull1, const std::vector<P>& hull2) {
-    // Combine points from both hulls and compute the new convex hull
-    std::vector<P> combined_points = hull1;
-    combined_points.insert(combined_points.end(), hull2.begin(), hull2.end());
-    return ConvexHull(combined_points);
-}
-
-// Parallelized Convex Hull
+// Algoritmo paralelo de casco convexo incremental
 std::vector<P> ParallelConvexHull(std::vector<P>& points) {
     size_t n = points.size();
-    if (n <= NUM_THREADS) {
-        return ConvexHull(points); // Fall back to sequential if small size
+    std::vector<P> hull;
+
+    if (n <= 3) {
+        return points; // Si hay 3 o menos puntos, el casco es trivial
     }
 
-    // Shuffle points randomly
-    std::ranges::shuffle(points, g);
+    // Baraja los puntos aleatoriamente
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(points.begin(), points.end(), g);
 
-    // Split points into NUM_THREADS subsets
-    std::vector<std::vector<P>> subsets(NUM_THREADS);
-    for (size_t i = 0; i < n; ++i) {
-        subsets[i % NUM_THREADS].push_back(points[i]);
-    }
-
-    // Create threads to compute partial hulls
-    pthread_t threads[NUM_THREADS];
-    ThreadArgs thread_args[NUM_THREADS];
-    for (int i = 0; i < NUM_THREADS; ++i) {
-        thread_args[i].points_subset = subsets[i];
-        pthread_create(&threads[i], nullptr, computePartialHull, &thread_args[i]);
-    }
-
-    // Wait for all threads to finish
-    for (int i = 0; i < NUM_THREADS; ++i) {
-        pthread_join(threads[i], nullptr);
-    }
-
-    // Collect partial hulls
-    std::vector<std::vector<P>> partial_hulls(NUM_THREADS);
-    for (int i = 0; i < NUM_THREADS; ++i) {
-        partial_hulls[i] = thread_args[i].partial_hull;
-    }
-
-    // Merge all partial hulls into a single global hull
-    std::vector<P> global_hull = partial_hulls[0];
-    for (int i = 1; i < NUM_THREADS; ++i) {
-        global_hull = mergeHulls(global_hull, partial_hulls[i]);
-
-        // Visualize the current merge step
-        std::vector<std::pair<P, P>> vis_edges;
-        for (size_t j = 0; j < global_hull.size(); ++j) {
-            vis_edges.emplace_back(global_hull[j], global_hull[(j + 1) % global_hull.size()]);
+    // Inicializa las primeras facetas con los primeros 3 puntos
+    for (int i = 0; i < 3; i++) {
+        facet f = {points[i], points[(i + 1) % 3]};
+        if (isVisible(points[(i + 2) % 3], f)) {
+            f = swapComponents(f);
         }
-        //send_update(points, vis_edges);
+        global_facets.insert(f);
     }
 
-    return global_hull;
+    // Inicializa las estructuras C y C_inv en paralelo
+    std::vector<pthread_t> threads(global_facets.size());
+    std::vector<ThreadArgs> thread_args(global_facets.size());
+    int idx = 0;
+    for (const auto& f : global_facets) {
+        thread_args[idx] = {f, points};
+        pthread_create(&threads[idx], nullptr, processFacet, &thread_args[idx]);
+        idx++;
+    }
+
+    // Espera a que terminen todos los hilos
+    for (pthread_t& thread : threads) {
+        pthread_join(thread, nullptr);
+    }
+
+    // Itera sobre los puntos restantes
+    for (size_t i = 3; i < n; ++i) {
+        P vi = points[i];
+        auto R = global_C_inv[vi]; // Facetas visibles desde el punto vi
+
+        // Encuentra las aristas límite (boundary)
+        std::set<ridge> boundary;
+        for (const auto& t : R) {
+            ridge r1 = t.first;
+            ridge r2 = t.second;
+            if (boundary.find(r1) != boundary.end()) {
+                boundary.erase(r1);
+            } else {
+                boundary.insert(r1);
+            }
+            if (boundary.find(r2) != boundary.end()) {
+                boundary.erase(r2);
+            } else {
+                boundary.insert(r2);
+            }
+        }
+
+        // Procesa cada arista límite en paralelo
+        std::vector<pthread_t> boundary_threads(boundary.size());
+        idx = 0;
+        for (const auto& r : boundary) {
+            // Aquí puedes implementar lógica adicional si quieres procesar cada límite en paralelo
+            idx++;
+        }
+
+        // Actualiza las facetas visibles y reconstruye los mapas C y C_inv
+        for (const auto& t : R) {
+            global_facets.erase(t);
+            for (const auto& vis_p : global_C[t]) {
+                global_C_inv[vis_p].erase(t);
+            }
+            global_C.erase(t);
+        }
+    }
+
+    // Convierte las facetas finales en un vector de puntos
+    for (const auto& f : global_facets) {
+        if (hull.empty() || hull.back() != f.first) {
+            hull.push_back(f.first);
+        }
+        hull.push_back(f.second);
+    }
+
+    return hull;
 }
