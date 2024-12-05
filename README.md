@@ -61,3 +61,49 @@ Use cmake and clion to compile the code.
 ## Example Output
 
 - The Python server visualizes the convex hull dynamically as new data is sent.
+
+## Results
+
+Primero ejecutamos 3 veces los códigos y sacamos el tiempo medio de las 3 ejecuciones para luego graficarlo:
+
+### Tabla de ejecuciones para el algoritmo secuencial
+
+| N Points  | Ejecucion 1 | Ejecucion 2 | Ejecucion 3 | Time(ms) |
+|-----------|-------------|-------------|-------------|----------|
+| 10        | 100         | 158         | 84          | 114      |
+| 100       | 858         | 1001        | 865         | 908      |
+| 1000      | 10928       | 9430        | 11689       | 10682    |
+| 10000     | 118098      | 103488      | 62687       | 94758    |
+| 100000    | 519265      | 324781      | 411211      | 418419   |
+| 1000000   | 5071498     | 3263971     | 3143741     | 3826403  |
+
+### Gráfico
+
+![Grafico de ejecuciones de Algoritmo secuencial](./sequential_times.jpg)
+
+### Tabla de ejecuciones para el algoritmo paralelo
+
+| N Points  | Ejecucion 1 | Ejecucion 2 | Ejecucion 3 | Time(ms) |
+|-----------|-------------|-------------|-------------|----------|
+| 10        | 318         | 473         | 337         | 376      |
+| 100       | 1791        | 1588        | 1322        | 1567     |
+| 1000      | 5378        | 6149        | 5152        | 5560     |
+| 10000     | 31192       | 31069       | 27032       | 29764    |
+| 100000    | 217987      | 230030      | 230505      | 226174   |
+| 1000000   | 1267852     | 1188519     | 1079041     | 1178471  |
+
+### Gráfico
+
+![Grafico de ejecuciones de Algoritmo paralelo](./Parallel_times.jpg)
+
+### Comparación final
+
+Vamos a empezar graficando cómo varian los tiempos hasta 1000 puntos.
+
+![Comparacion para pocos puntos ](./comparison_few_points.jpg)
+
+Notamos que al inicio el algoritmo paralelo demora más en ejecutar. Pero qué sucederá para más de 1000 puntos?
+
+![Comparación muchos numeros](./comparison.jpg)
+
+Se nota claramente que el algoritmo paralelo es mucho mejor cuando hablamos de muchos números.
