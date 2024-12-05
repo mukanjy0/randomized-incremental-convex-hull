@@ -1,11 +1,6 @@
 #include "sequential_convex_hull.h"
 
-/*************************************************************
- *            Two Dimensional Convex Hull ********************
- *************************************************************
- * Authors: Isaac Browne (ibrowne@andrew.cmu.edu),
-            Sylvia Zhang (ziyuzhan@andrew.cmu.edu)
- *************************************************************/
+
 #include <iostream>
 #include <utility>
 #include <set>
