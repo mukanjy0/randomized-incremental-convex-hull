@@ -38,8 +38,7 @@ def plot_hull():
                 ax.scatter(points[:, 0], points[:, 1], label="Points")
             for edge in hull_edges:
                 p1, p2 = edge
-                ax.plot([p1[0], p2[0]], [p1[1], p2[1]], "r-", linewidth=2,
-                        label="Hull Edge")
+                ax.plot([p1[0], p2[0]], [p1[1], p2[1]], "r-", linewidth=2)
         ax.legend()
         ax.set_title("Convex Hull Visualization")
 

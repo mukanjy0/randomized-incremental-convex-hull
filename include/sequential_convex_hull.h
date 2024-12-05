@@ -4,7 +4,7 @@
 #include <set>
 #include <map>
 using namespace std;
-#define point2D pair<int, int>
+#define point2D pair<double, double>
 #define facet2D pair<point2D, point2D>
 #define ridge2D point2D
 

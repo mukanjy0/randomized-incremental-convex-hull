@@ -1,7 +1,13 @@
 #include <iostream>
+#include <random>
+
 #include "sequential_convex_hull.h"
 
-#define NUM_POINTS 100
+#define NUM_POINTS 10
+
+
+std::random_device rdf;
+std::mt19937 gf(rdf());
 
 int main(int argc, char** argv)
 {
@@ -12,7 +18,8 @@ int main(int argc, char** argv)
   point2D *points = new point2D[NUM_POINTS];
   for (int i = 0; i < NUM_POINTS; i++) {
     //std::cin >> points[i].first >> points[i].second;
-    points[i] = {i, i};
+    // randomly generate points
+    points[i] = std::make_pair(gf() % 100, gf() % 100);
   }
   //Sequential2DCH::printPoints2D(points, size);
   point2D *hull = new point2D[NUM_POINTS];

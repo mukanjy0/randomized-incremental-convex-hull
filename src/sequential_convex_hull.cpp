@@ -13,11 +13,10 @@
 #include <algorithm>
 #include <random>
 #include "sequential_convex_hull.h"
+#include "visualizer_helper.h"
 
 using namespace std;
-#define point2D pair<int, int>
-#define facet2D pair<point2D, point2D>
-#define ridge2D point2D
+
 std::random_device rd;
 std::mt19937 g(rd());
 
@@ -118,6 +117,21 @@ namespace Sequential2DCH {
         cout << "Starting Hull" << std::endl;
         printFacetSet2D(H);
       }
+
+      vector<Point> current_points;
+      for (int i = 0; i < size; ++i) {
+        current_points.push_back({points[i].first, points[i].second}); // Convert point2D to Point
+      }
+
+      vector<pair<Point, Point>> current_hull;
+      for (const auto& f : H) {
+        current_hull.push_back({
+                                       {f.first.first, f.first.second}, // Convert facet2D to pair<Point, Point>
+                                       {f.second.first, f.second.second}
+                               });
+      }
+
+      send_update(current_points, current_hull);
       // Initialize conflicting visible points map
       map<facet2D, set<point2D>> C;
       map<point2D, set<facet2D>> C_inv;
@@ -244,6 +258,16 @@ namespace Sequential2DCH {
           cout << "Hull " << i << std::endl;
           printFacetSet2D(H);
         }
+        current_hull.clear();
+        for (const auto& f : H) {
+          current_hull.push_back({
+                                         {f.first.first, f.first.second},
+                                         {f.second.first, f.second.second}
+                                 });
+        }
+
+        // Send updated hull to visualizer
+        send_update(current_points, current_hull);
       }
 
       //cout << "Final Hull" << std::endl;

@@ -25,7 +25,6 @@ sudo apt-get install libcurl4-openssl-dev libjsoncpp-dev
 ## Setting Up the Project
 
 1. Clone the repository or copy the code.
-2. Save the provided code in a file named `utility.cpp`.
 
 ---
 
@@ -35,7 +34,7 @@ Use cmake and clion to compile the code.
 
 ---
 
-## Running the Utility
+## Running the Code
 
 1. **Start the Python Visualization Server**:
     - Run the Flask server on port `8000`.

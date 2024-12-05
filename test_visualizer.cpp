@@ -7,7 +7,7 @@ int main() {
           {{0, 0}, {1, 1}}, {{1, 1}, {2, 0}}, {{2, 0}, {0, 0}}
   };
 
-  send_update("http://127.0.0.1:8000/update", points, hull_edges);
+  send_update(points, hull_edges);
 
   return 0;
 }

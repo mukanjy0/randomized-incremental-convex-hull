@@ -3,12 +3,13 @@
 #include <json/json.h>
 #include <iostream>
 
+const std::string FLASK_URL = "http://127.0.0.1:8000/update";
+
 struct Point {
     double x, y;
 };
 
-void send_update(const std::string& url,
-                 const std::vector<Point>& points,
+void send_update(const std::vector<Point>& points,
                  const std::vector<std::pair<Point, Point>>& hull_edges) {
   CURL* curl;
   CURLcode res;
@@ -47,7 +48,7 @@ void send_update(const std::string& url,
     std::string json_data = Json::writeString(writer, root);
 
     // Set up libcurl POST request
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, FLASK_URL.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_data.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, json_data.size());
 
