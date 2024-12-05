@@ -1,20 +1,33 @@
-//Two dimensional version
+#ifndef SEQUENTIAL_CONVEX_HULL_H
+#define SEQUENTIAL_CONVEX_HULL_H
+
 #include <iostream>
 #include <utility>
 #include <set>
+#include <complex>
 #include <map>
-using namespace std;
-#define point2D pair<double, double>
-#define facet2D pair<point2D, point2D>
-#define ridge2D point2D
 
-namespace Sequential2DCH {
-    void printFacet2D(facet2D f);
-    void printFacetSet2D(set<facet2D> F);
-    void printPoint2D(point2D p);
-    void printPointSet2D(set<point2D> P);
-    void printPoints2D(point2D* points, int size);
-    facet2D facetSwap(facet2D f);
-    bool visible2D(point2D v, facet2D t);
-    int convexHull2D(point2D* points, int size, point2D* output, bool debug);
-}
+
+typedef long long D;
+typedef std::pair<D,D> P;
+#define X first
+#define Y second
+#define facet std::pair<P,P>
+#define ridge P
+
+D operator*(P p1, P p2);
+P operator-(P p1, P p2);
+
+
+facet swapComponents(facet f);
+
+bool isVisible(P v, facet  t);
+
+std::vector<P> ConvexHull(std::vector<P>& points);
+
+
+
+
+
+
+#endif  //SEQUENTIAL_CONVEX_HULL_H
