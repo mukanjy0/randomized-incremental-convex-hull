@@ -9,17 +9,17 @@ int main(int argc, char** argv) {
     std::random_device rd2;
     std::mt19937 gen2(rd2());
 
-    // Modo de depuración opcional
+    int n = 10;
     bool debug = false;
-    if (argc > 1 && std::string(argv[1]) == "-debug") {
-        debug = true;
+    if (argc > 1) {
+        n = atoi(argv[1]);
     }
 
     // Generador de números aleatorios
-    std::uniform_real_distribution<> dis(0.0, 100.0);
+    std::uniform_real_distribution<> dis(-1000, 1000);
 
     // Iterar desde 10 puntos hasta 10,000 puntos
-    for (int num_points = 10; num_points <= 1000000; num_points *= 10) {
+    for (int num_points = 10; num_points <= 10; num_points *= 10) {
         // Generar puntos aleatorios
         std::vector<P> points;
         for (int i = 0; i < num_points; i++) {

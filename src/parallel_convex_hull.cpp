@@ -65,7 +65,7 @@ std::vector<P> ParallelConvexHull(std::vector<P>& points) {
         for (size_t j = 0; j < global_hull.size(); ++j) {
             vis_edges.emplace_back(global_hull[j], global_hull[(j + 1) % global_hull.size()]);
         }
-        send_update(points, vis_edges);
+        //send_update(points, vis_edges);
     }
 
     return global_hull;

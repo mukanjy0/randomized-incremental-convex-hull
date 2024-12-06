@@ -96,7 +96,8 @@ std::vector<P> ConvexHull(std::vector<P>& points) {
                 if (f.first == r || f.second == r) {
                     if (isVisible(vi, f)) {
                         t1 = f;
-                    } else {
+                    }
+                    else {
                         t2 = f;
                     }
                 }

@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> dis(0.0, 100.0);
 
-  for (int num_points = 100; num_points <= 100; num_points *= 10) {
+  for (int num_points = 10; num_points <= 10000; num_points *= 10) {
     std::vector<P> points;
     for (int i = 0; i < num_points; i++) {
       points.emplace_back(dis(gen), dis(gen)); // Cada punto tiene coordenadas (x, y)
